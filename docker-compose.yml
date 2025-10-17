@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  multitenancy-basics:
+    image: postgres:13
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass1234
+      POSTGRES_DB: multitenancy-basics
+    networks:
+      - zura-network
+networks:
+  zura-network:

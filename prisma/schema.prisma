@@ -1,0 +1,74 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Company {
+  id       String @id @default(cuid())
+  name     String @unique
+  password String
+
+  users        User[]
+  companyTasks Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  name     String
+  password String
+  role     Role   @default(USER)
+
+  companyId   String?
+  companyRole Role     @default(USER)
+  company     Company? @relation(fields: [companyId], references: [id])
+
+  createdTasks  Task[] @relation("createdBy")
+  assignedTasks Task[] @relation("assignedTo")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation("createdBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  assignedToId String?
+  assignedTo   User?   @relation("assignedTo", fields: [assignedToId], references: [id], onDelete: Cascade)
+
+  shouldBeDoneBy DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([assignedToId])
+  @@index([createdById])
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
