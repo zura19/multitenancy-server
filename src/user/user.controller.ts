@@ -34,7 +34,7 @@ export class UserController {
     return this.userService.getAllUsers(tenantId, user?.id, query);
   }
 
-  @HttpCode(204)
+  @HttpCode(201)
   @UseGuards(JwtGuard, companyAdminGuard)
   @Delete(':id')
   removeUser(@Tenant() tenantId: string, @Param('id') id: string) {

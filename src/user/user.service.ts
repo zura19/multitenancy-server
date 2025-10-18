@@ -27,7 +27,8 @@ export class UserService {
         users: passwordHiddenUsers,
       };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      console.log(error);
+      throw error;
     }
   }
 
@@ -47,7 +48,8 @@ export class UserService {
       });
       return { success: true };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      console.log(error);
+      throw error;
     }
   }
 }
