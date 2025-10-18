@@ -12,7 +12,7 @@ export class UserService {
         where: {
           companyId: tenantId,
           id: { not: userId },
-          name: { contains: query?.name },
+          name: { contains: query?.name, mode: 'insensitive' },
         },
         take: 10,
       });

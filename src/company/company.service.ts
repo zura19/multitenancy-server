@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import * as argon from 'argon2';
 
 @Injectable()
 export class CompanyService {
@@ -97,6 +103,49 @@ export class CompanyService {
           id: {
             in: tasks.map((task) => task.id),
           },
+        },
+      });
+
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async changeCompanyPassword(tenantId: string, body: ChangePasswordDto) {
+    if (!tenantId)
+      throw new NotFoundException(
+        'You do not have permission to change company password',
+      );
+    try {
+      const { currentPassword, newPassword, confirmPassword } = body;
+
+      if (newPassword !== confirmPassword)
+        throw new BadRequestException('Passwords do not match');
+      if (newPassword === currentPassword)
+        throw new BadRequestException(
+          'New password cannot be same as current password',
+        );
+
+      const company = await this.prisma.company.findUnique({
+        where: { id: tenantId },
+      });
+      if (!company) throw new NotFoundException('Company not found');
+
+      const verifyPassword = await argon.verify(
+        company.password,
+        currentPassword,
+      );
+      if (!verifyPassword)
+        throw new BadRequestException('Password is incorrect');
+
+      const password = await argon.hash(newPassword);
+      await this.prisma.company.update({
+        where: {
+          id: tenantId,
+        },
+        data: {
+          password,
         },
       });
 
